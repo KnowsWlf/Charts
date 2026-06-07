@@ -30,8 +30,8 @@ web_ui:
     repository: ekkoye8888/hermes-web-ui
     # -- Image pull policy
     pullPolicy: IfNotPresent
-    # -- Image tag
-    tag: "latest"
+    # -- Image tag. Leave empty to use the chart appVersion (recommended).
+    tag: ""
 
   # -- Override the container command
   command: []

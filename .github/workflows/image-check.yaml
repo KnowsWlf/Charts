@@ -1,65 +1,73 @@
 name: Check for Updated Images
 
-# Scheduled check for new Docker image tags
+# Scheduled check for new Hermes Web UI image tags.
+# When a newer stable (vX.Y.Z) tag is published, automatically open a PR
+# bumping the chart appVersion (which is also the default image tag) and
+# the chart version.
 on:
   schedule:
     # Run daily at 6 AM UTC
     - cron: '0 6 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   check-updates:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Check Hermes Agent image tags
-        id: agent_check
-        run: |
-          # Fetch latest tags from Docker Hub API
-          # nousresearch/hermes-agent
-          echo "Checking nousresearch/hermes-agent..."
-          TOKEN=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:nousresearch/hermes-agent:pull" | jq -r '.token')
-          TAGS=$(curl -s -H "Authorization: Bearer $TOKEN" \
-            "https://registry-1.docker.io/v2/nousresearch/hermes-agent/tags/list?n=10" | jq -r '.tags[]' | grep -v 'latest' | tail -5)
-          echo "Recent tags: $TAGS"
-          echo "tags=$TAGS" >> $GITHUB_OUTPUT
-
-      - name: Check Web UI image tags
-        id: webui_check
+      - name: Determine latest Web UI version
+        id: webui
         run: |
           echo "Checking ekkoye8888/hermes-web-ui..."
           TOKEN=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ekkoye8888/hermes-web-ui:pull" | jq -r '.token')
-          TAGS=$(curl -s -H "Authorization: Bearer $TOKEN" \
-            "https://registry-1.docker.io/v2/ekkoye8888/hermes-web-ui/tags/list?n=10" | jq -r '.tags[]' | grep -v 'latest' | tail -5)
-          echo "Recent tags: $TAGS"
-          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          LATEST=$(curl -s -H "Authorization: Bearer $TOKEN" \
+            "https://registry-1.docker.io/v2/ekkoye8888/hermes-web-ui/tags/list" \
+            | jq -r '.tags[]' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          echo "Latest stable web-ui tag: $LATEST"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
 
-      - name: Create issue if new tags found
-        uses: actions/github-script@v7
+      - name: Read current appVersion
+        id: current
+        run: |
+          CURRENT=$(grep '^appVersion:' hermes-helm/Chart.yaml | awk '{print $2}' | tr -d '"')
+          echo "Current appVersion: $CURRENT"
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+
+      - name: Bump Chart.yaml if newer
+        id: bump
+        if: steps.webui.outputs.latest != '' && steps.webui.outputs.latest != steps.current.outputs.current
+        run: |
+          LATEST="${{ steps.webui.outputs.latest }}"
+          # Bump appVersion to the new Web UI tag (also the default image tag).
+          sed -i "s/^appVersion:.*/appVersion: \"${LATEST}\"/" hermes-helm/Chart.yaml
+          # Bump the chart version patch.
+          CHART_VER=$(grep '^version:' hermes-helm/Chart.yaml | awk '{print $2}' | tr -d '"')
+          IFS='.' read -r MA MI PA <<< "$CHART_VER"
+          NEW_CHART_VER="${MA}.${MI}.$((PA + 1))"
+          sed -i "s/^version:.*/version: ${NEW_CHART_VER}/" hermes-helm/Chart.yaml
+          echo "Bumped appVersion to ${LATEST}, chart version to ${NEW_CHART_VER}"
+          echo "chart_version=${NEW_CHART_VER}" >> "$GITHUB_OUTPUT"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create Pull Request
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
         with:
-          script: |
-            const agentTags = `${{ steps.agent_check.outputs.tags }}`;
-            const webuiTags = `${{ steps.webui_check.outputs.tags }}`;
+          commit-message: "chore: bump Hermes Web UI to ${{ steps.webui.outputs.latest }}"
+          branch: auto/bump-webui-${{ steps.webui.outputs.latest }}
+          delete-branch: true
+          title: "chore: bump Hermes Web UI to ${{ steps.webui.outputs.latest }}"
+          body: |
+            Automated update — a newer stable Hermes Web UI image was published.
 
-            const body = `## 📦 New Image Tags Detected
+            - `appVersion`: `${{ steps.current.outputs.current }}` → `${{ steps.webui.outputs.latest }}`
+            - chart `version` → `${{ steps.bump.outputs.chart_version }}`
 
-            ### nousresearch/hermes-agent
-            Recent tags: ${agentTags || 'Unable to check'}
-
-            ### ekkoye8888/hermes-web-ui
-            Recent tags: ${webuiTags || 'Unable to check'}
-
-            Review and update \`values.yaml\` if needed.`;
-
-            // Only create issue if there are actual tags
-            if (agentTags.trim() || webuiTags.trim()) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: '📦 New container image tags available',
-                body: body,
-                labels: ['dependencies', 'automated']
-              });
-            }
+            The default image tag follows `appVersion`, so merging this releases the new version.
+          labels: dependencies, automated
