@@ -10,8 +10,8 @@ Every registry is a `Deployment` + `Service` + `PersistentVolumeClaim` + (option
 ## TL;DR
 
 ```bash
-helm repo add knowwlf https://knowwlf.github.io/Charts/
-helm install docker-proxy knowwlf/docker-proxy \
+helm repo add knowswlf https://knowswlf.github.io/Charts/
+helm install docker-proxy knowswlf/docker-proxy \
   --namespace docker-proxy --create-namespace \
   --set domain=example.com \
   --set traefik.tlsSecretName=example-com-tls
@@ -36,7 +36,7 @@ Two mutually exclusive options — enable one, not both:
 - **Standard Ingress**: for nginx/HAProxy/etc. clusters, set `traefik.enabled=false` and `ingress.enabled=true`. One `Ingress` is created per registry at `<name>.<domain>`.
 
 ```bash
-helm install docker-proxy knowwlf/docker-proxy \
+helm install docker-proxy knowswlf/docker-proxy \
   --namespace docker-proxy --create-namespace \
   --set domain=example.com \
   --set traefik.enabled=false \
@@ -125,7 +125,7 @@ docker push registry.example.com/myapp:1.0
 Enable basic auth on the hosted registry:
 
 ```bash
-helm upgrade docker-proxy knowwlf/docker-proxy --reuse-values \
+helm upgrade docker-proxy knowswlf/docker-proxy --reuse-values \
   --set auth.enabled=true \
   --set auth.users[0].username=admin \
   --set auth.users[0].password=s3cret

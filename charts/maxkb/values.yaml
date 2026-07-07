@@ -1,0 +1,266 @@
+# =============================================================================
+# MaxKB — Helm Chart Values
+#
+# MaxKB v2 ships as an ALL-IN-ONE image (1panel/maxkb) that bundles the app,
+# PostgreSQL 17 + pgvector, and Redis. By default everything runs inside a
+# single StatefulSet pod backed by one PVC at /opt/maxkb.
+#
+# Point `database.external` / `redis.external` at managed services to run the
+# app against external PostgreSQL/Redis instead of the embedded ones.
+# =============================================================================
+
+# -- Override the chart name (default: maxkb)
+nameOverride: ""
+# -- Override the full resource name (default: maxkb)
+fullnameOverride: "maxkb"
+
+# -- Global settings applied to all resources
+global:
+  # -- Kubernetes namespace override (set via --namespace or leave empty for release namespace)
+  namespace: ""
+  # -- Image pull secrets applied to all pods
+  imagePullSecrets: []
+
+# =============================================================================
+# Image
+# =============================================================================
+image:
+  # -- Container image repository (all-in-one)
+  repository: 1panel/maxkb
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag. Leave empty to use the chart appVersion (recommended).
+  tag: ""
+
+# =============================================================================
+# Workload (StatefulSet)
+#
+# MaxKB embeds PostgreSQL + Redis on a single data directory, so it CANNOT be
+# scaled horizontally. A StatefulSet is used (not a Deployment) so that during
+# upgrades the old pod is fully terminated — and its ReadWriteOnce volume
+# released — before the replacement pod starts, avoiding Multi-Attach deadlocks.
+# =============================================================================
+
+# -- Number of replicas. MUST be 1 (embedded PostgreSQL/Redis own a single data dir).
+replicaCount: 1
+
+# -- StatefulSet update strategy
+updateStrategy:
+  type: RollingUpdate
+
+# -- Override the container command
+command: []
+# -- Arguments
+args: []
+
+# -- Extra environment variables (non-sensitive). Passed through verbatim.
+#    e.g. MAXKB_DB_MAX_OVERFLOW, language, etc.
+env: {}
+
+# -- Resource requests & limits (bundles app + PostgreSQL + Redis + embedding model)
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "4Gi"
+    cpu: "2"
+
+# -- Service configuration
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 8080
+  # -- NodePort (only for LoadBalancer/NodePort types)
+  nodePort: null
+  # -- Annotations on the service
+  annotations: {}
+
+# -- Pod-level security context.
+#    Left empty by default: the image starts PostgreSQL via its own entrypoint
+#    (root → gosu postgres), so do not force runAsNonRoot. Set fsGroup here if
+#    your storage provisioner needs it for volume permissions.
+podSecurityContext: {}
+# -- Container-level security context (empty: rely on image defaults)
+containerSecurityContext: {}
+
+# -- Health probes (HTTP on the app port). Startup probe is generous because
+#    the embedded PostgreSQL needs time to initialize on first boot.
+probes:
+  liveness:
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  startup:
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 60
+
+# -- Node selector
+nodeSelector: {}
+# -- Tolerations
+tolerations: []
+# -- Affinity
+affinity: {}
+# -- Topology spread constraints
+topologySpreadConstraints: []
+
+# -- Extra volumes
+extraVolumes: []
+# -- Extra volume mounts
+extraVolumeMounts: []
+
+# -- Pod annotations
+podAnnotations: {}
+# -- Pod labels
+podLabels: {}
+
+# =============================================================================
+# Persistence
+#
+# Single volume mounted at /opt/maxkb holding (in embedded mode) the PostgreSQL
+# data, Redis data, logs, and the downloaded embedding model.
+# =============================================================================
+persistence:
+  # -- Enable persistent storage
+  enabled: true
+  # -- Storage class name (empty string = default StorageClass)
+  storageClass: ""
+  # -- Access mode
+  accessMode: ReadWriteOnce
+  # -- Requested storage size
+  size: 10Gi
+  # -- Existing persistent volume claim name (leave empty to create one)
+  existingClaim: ""
+  # -- Mount path (official image data dir)
+  mountPath: /opt/maxkb
+  # -- Annotations on the PVC
+  annotations: {}
+
+# =============================================================================
+# External PostgreSQL (optional)
+#
+# When enabled, the app connects to this PostgreSQL and the embedded one is NOT
+# started (the entrypoint skips it because MAXKB_DB_HOST != 127.0.0.1).
+# The database must have the `vector` (pgvector) extension available.
+# =============================================================================
+database:
+  external:
+    # -- Use an external PostgreSQL instead of the embedded one
+    enabled: false
+    # -- Hostname
+    host: ""
+    # -- Port
+    port: 5432
+    # -- Database name
+    name: maxkb
+    # -- Username
+    user: postgres
+    # -- Password (stored in the chart Secret; prefer --set or existingSecret)
+    password: ""
+    # -- Max overflow connections
+    maxOverflow: 80
+
+# =============================================================================
+# External Redis (optional)
+#
+# When enabled, the app connects to this Redis and the embedded one is NOT
+# started (the entrypoint skips it because MAXKB_REDIS_HOST != 127.0.0.1).
+# =============================================================================
+redis:
+  external:
+    # -- Use an external Redis instead of the embedded one
+    enabled: false
+    # -- Hostname
+    host: ""
+    # -- Port
+    port: 6379
+    # -- Redis DB index
+    db: 0
+    # -- Password (stored in the chart Secret; prefer --set or existingSecret)
+    password: ""
+
+# =============================================================================
+# Secrets (external DB/Redis passwords)
+#
+# Only used when database.external.enabled or redis.external.enabled is set.
+# In pure all-in-one mode the embedded PostgreSQL/Redis use the image's baked-in
+# credentials and no Secret is required.
+# =============================================================================
+secrets:
+  # -- Create a Kubernetes Secret for external DB/Redis passwords
+  create: true
+  # -- Existing secret name (must provide MAXKB_DB_PASSWORD / MAXKB_REDIS_PASSWORD keys)
+  existingSecret: ""
+  # -- Secret annotations
+  annotations: {}
+
+# =============================================================================
+# Ingress (standard Kubernetes Ingress — works with nginx, Traefik, etc.)
+#
+# For NGINX ingress, uncomment the annotations below: MaxKB uploads documents
+# (needs a large body size) and streams LLM output (needs long timeouts).
+# =============================================================================
+ingress:
+  # -- Enable standard Kubernetes Ingress
+  enabled: false
+  # -- Ingress class name (e.g. "nginx" or "traefik")
+  className: ""
+  # -- Annotations
+  annotations: {}
+  #   # --- NGINX example ---
+  #   nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+  #   nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+  #   nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  #   nginx.ingress.kubernetes.io/proxy-buffering: "off"
+
+  # -- TLS configuration
+  tls: []
+  #  - secretName: maxkb-tls
+  #    hosts:
+  #      - maxkb.example.com
+
+  # -- Host rules
+  hosts:
+    - host: maxkb.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+# =============================================================================
+# Traefik IngressRoute (Traefik CRD — for native middleware / HTTP→HTTPS redirect)
+#
+# Use this instead of `ingress` when running Traefik and you want its native
+# IngressRoute resource. Do not enable both `ingress` and `traefik` at once.
+# =============================================================================
+traefik:
+  # -- Enable Traefik IngressRoute
+  enabled: false
+  # -- Domain name
+  host: "maxkb.example.com"
+  # -- TLS certificate secret name
+  tlsSecretName: ""
+  # -- Entry point name for HTTP (redirect → HTTPS)
+  httpEntryPoint: "web"
+  # -- Entry point name for HTTPS
+  httpsEntryPoint: "websecure"
+
+# -- Extra Kubernetes manifests (included as raw templates)
+extraManifests: []

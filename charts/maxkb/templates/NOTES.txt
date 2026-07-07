@@ -1,0 +1,60 @@
+{{- $svc := include "maxkb.fullname" . }}
+{{- $releaseName := .Release.Name }}
+{{- $namespace := .Release.Namespace }}
+================================================================================
+  MaxKB deployed!  (Max Knowledge Brain — all-in-one)
+================================================================================
+
+  Release:   {{ $releaseName }}
+  Namespace: {{ $namespace }}
+
+  🔗 Access MaxKB:
+    {{- if .Values.traefik.enabled }}
+    https://{{ .Values.traefik.host }}
+    {{- else if .Values.ingress.enabled }}
+    http(s)://{{ (index .Values.ingress.hosts 0).host }}
+    {{- else if eq .Values.service.type "NodePort" }}
+    http://<NODE_IP>:{{ .Values.service.nodePort }}
+    {{- else if eq .Values.service.type "LoadBalancer" }}
+    kubectl -n {{ $namespace }} get svc {{ $svc }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+    {{- else }}
+    kubectl -n {{ $namespace }} port-forward svc/{{ $svc }} 8080:{{ .Values.service.port }}
+    Then open: http://localhost:8080
+    {{- end }}
+
+  🔑 Default login (change immediately after first sign-in!):
+    Username: admin
+    Password: MaxKB@123..
+
+  🗄  Data backend:
+    {{- if .Values.database.external.enabled }}
+    PostgreSQL: external — {{ .Values.database.external.host }}:{{ .Values.database.external.port }}/{{ .Values.database.external.name }}
+    {{- else }}
+    PostgreSQL: embedded (inside the pod)
+    {{- end }}
+    {{- if .Values.redis.external.enabled }}
+    Redis:      external — {{ .Values.redis.external.host }}:{{ .Values.redis.external.port }}
+    {{- else }}
+    Redis:      embedded (inside the pod)
+    {{- end }}
+
+  📦 Persistent data:
+    {{- if .Values.persistence.enabled }}
+    PVC:   {{ include "maxkb.pvcName" . }}
+    Mount: {{ .Values.persistence.mountPath }}
+    Size:  {{ .Values.persistence.size }}
+    {{- else }}
+    ⚠️  Persistence is DISABLED — all data is lost when the pod restarts.
+    {{- end }}
+
+  📋 Check status:
+    kubectl -n {{ $namespace }} get pods -l app.kubernetes.io/instance={{ $releaseName }}
+    kubectl -n {{ $namespace }} logs statefulset/{{ $svc }}
+
+  ⚠️  Notes:
+    - This is a StatefulSet pinned to 1 replica; the embedded PostgreSQL/Redis
+      own a single data directory and cannot be scaled horizontally.
+    {{- if not .Values.persistence.enabled }}
+    - Enable persistence.enabled=true before using this in production.
+    {{- end }}
+================================================================================

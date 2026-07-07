@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "maxkb.fullname" . }}
+  labels:
+    {{- include "maxkb.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  serviceName: {{ include "maxkb.fullname" . }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "maxkb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "maxkb.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: maxkb
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            {{- /* ---------------- PostgreSQL ---------------- */}}
+            {{- if .Values.database.external.enabled }}
+            - name: MAXKB_DB_HOST
+              value: {{ .Values.database.external.host | quote }}
+            - name: MAXKB_DB_PORT
+              value: {{ .Values.database.external.port | quote }}
+            - name: MAXKB_DB_NAME
+              value: {{ .Values.database.external.name | quote }}
+            - name: MAXKB_DB_USER
+              value: {{ .Values.database.external.user | quote }}
+            - name: MAXKB_DB_MAX_OVERFLOW
+              value: {{ .Values.database.external.maxOverflow | quote }}
+            {{- if or .Values.database.external.password .Values.secrets.existingSecret }}
+            - name: MAXKB_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "maxkb.secretName" . }}
+                  key: MAXKB_DB_PASSWORD
+            {{- end }}
+            {{- else }}
+            {{- /* Embedded PostgreSQL: entrypoint starts it because host is loopback */}}
+            - name: MAXKB_DB_HOST
+              value: "127.0.0.1"
+            {{- end }}
+            {{- /* ------------------- Redis ------------------ */}}
+            {{- if .Values.redis.external.enabled }}
+            - name: MAXKB_REDIS_HOST
+              value: {{ .Values.redis.external.host | quote }}
+            - name: MAXKB_REDIS_PORT
+              value: {{ .Values.redis.external.port | quote }}
+            - name: MAXKB_REDIS_DB
+              value: {{ .Values.redis.external.db | quote }}
+            {{- if or .Values.redis.external.password .Values.secrets.existingSecret }}
+            - name: MAXKB_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "maxkb.secretName" . }}
+                  key: MAXKB_REDIS_PASSWORD
+            {{- end }}
+            {{- else }}
+            {{- /* Embedded Redis: entrypoint starts it because host is loopback */}}
+            - name: MAXKB_REDIS_HOST
+              value: "127.0.0.1"
+            {{- end }}
+            {{- /* -------------- Extra passthrough ------------ */}}
+            {{- range $key, $val := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.probes.liveness }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.probes.readiness }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.probes.startup }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "maxkb.pvcName" . }}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

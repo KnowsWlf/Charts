@@ -1,0 +1,18 @@
+apiVersion: v2
+name: maxkb
+description: Helm chart for MaxKB (Max Knowledge Brain) — an all-in-one enterprise-grade agent platform (RAG + workflow + MCP) on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "v2.0.0"
+keywords:
+  - maxkb
+  - rag
+  - ai-agent
+  - llm
+  - knowledge-base
+  - pgvector
+home: https://maxkb.cn/
+sources:
+  - https://github.com/1Panel-dev/MaxKB
+maintainers:
+  - name: KnowsWlf

@@ -44,10 +44,10 @@ deployment.
 ## Quick Start
 
 ```bash
-helm repo add knowwlf https://knowwlf.github.io/Charts/
+helm repo add knowswlf https://knowswlf.github.io/Charts/
 helm repo update
 
-helm install hermes knowwlf/hermes-web-ui \
+helm install hermes knowswlf/hermes-web-ui \
   --set secrets.anthropicApiKey="sk-ant-..." \
   --set traefik.enabled=true \
   --set traefik.host="hermes.example.com" \
@@ -73,7 +73,7 @@ traefik:
 ```
 
 ```bash
-helm install hermes knowwlf/hermes-web-ui -f my-values.yaml
+helm install hermes knowswlf/hermes-web-ui -f my-values.yaml
 ```
 
 ### Access the Web UI
@@ -177,7 +177,7 @@ published — see [`.github/workflows/image-check.yaml`](../../.github/workflows
 ## Upgrading
 
 ```bash
-helm upgrade hermes knowwlf/hermes-web-ui -f my-values.yaml
+helm upgrade hermes knowswlf/hermes-web-ui -f my-values.yaml
 ```
 
 ## Uninstall
