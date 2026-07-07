@@ -35,7 +35,7 @@
 
   📋 Check status:
     kubectl -n {{ $namespace }} get pods -l app.kubernetes.io/instance={{ $releaseName }}
-    kubectl -n {{ $namespace }} logs deployment/{{ $webUiSvc }}
+    kubectl -n {{ $namespace }} logs statefulset/{{ $webUiSvc }}
 
   🔐 Auto-generated secrets:
     kubectl -n {{ $namespace }} get secret {{ include "hermes.secretName" . }} -o jsonpath='{.data.API_SERVER_KEY}' | base64 -d; echo

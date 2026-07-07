@@ -5,8 +5,8 @@ Production-ready Helm chart for [Hermes Web UI](https://github.com/EKKOLearnAI/h
 The Web UI image is built on top of [Hermes Agent](https://hermes-agent.nousresearch.com/)
 (`FROM nousresearch/hermes-agent`) and bundles the **full Agent**, the Playwright/Chromium
 headless browser, and all tooling in a **single container**. The chart therefore deploys
-**one pod** — the Web UI manages its own internal Hermes gateway. There is no separate Agent
-deployment.
+**one pod** (a single-replica **StatefulSet**) — the Web UI manages its own internal Hermes
+gateway. There is no separate Agent deployment.
 
 ## Architecture
 
@@ -100,6 +100,7 @@ kubectl get secret hermes-web-ui -o jsonpath='{.data.API_SERVER_KEY}' | base64 -
 |-----------|-------------|---------|
 | `web_ui.enabled` | Enable the Web UI deployment | `true` |
 | `web_ui.replicaCount` | Replicas (MUST be 1) | `1` |
+| `web_ui.updateStrategy.type` | StatefulSet update strategy | `RollingUpdate` |
 | `web_ui.image.repository` | Image repository | `ekkoye8888/hermes-web-ui` |
 | `web_ui.image.tag` | Image tag (empty → chart `appVersion`) | `""` |
 | `web_ui.image.pullPolicy` | Image pull policy | `IfNotPresent` |
@@ -179,6 +180,16 @@ published — see [`.github/workflows/image-check.yaml`](../../.github/workflows
 ```bash
 helm upgrade hermes knowswlf/hermes-web-ui -f my-values.yaml
 ```
+
+> **Migrating from chart < 0.1.11 (Deployment → StatefulSet):** chart 0.1.11
+> changed the workload from a `Deployment` to a `StatefulSet` (same name). Kubernetes
+> cannot mutate an object's kind in place, so delete the old Deployment first, then
+> upgrade — the PVC (`resource-policy: keep`) and its data are preserved:
+>
+> ```bash
+> kubectl -n <ns> delete deployment hermes-web-ui
+> helm upgrade hermes knowswlf/hermes-web-ui -f my-values.yaml
+> ```
 
 ## Uninstall
 

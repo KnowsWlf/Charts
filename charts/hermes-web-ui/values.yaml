@@ -22,8 +22,14 @@ web_ui:
   # -- Override the Web UI resource name
   fullnameOverride: "hermes-web-ui"
 
-  # -- Number of replicas (must be 1)
+  # -- Number of replicas (must be 1; the Web UI owns a single ReadWriteOnce data dir)
   replicaCount: 1
+
+  # -- StatefulSet update strategy. Deployed as a StatefulSet (not a Deployment) so
+  #    the old pod fully terminates — releasing its RWO volume — before the
+  #    replacement starts during upgrades, avoiding Multi-Attach deadlocks.
+  updateStrategy:
+    type: RollingUpdate
 
   image:
     # -- Container image repository

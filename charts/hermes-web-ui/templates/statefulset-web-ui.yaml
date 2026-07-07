@@ -1,6 +1,6 @@
 {{- if .Values.web_ui.enabled }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "hermes.web_ui.fullname" . }}
   labels:
@@ -14,6 +14,10 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.web_ui.replicaCount }}
+  # Governing Service (StatefulSet requirement); the Web UI Service is headless-compatible.
+  serviceName: {{ include "hermes.web_ui.fullname" . }}
+  updateStrategy:
+    {{- toYaml .Values.web_ui.updateStrategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "hermes.web_ui.selectorLabels" . | nindent 6 }}
