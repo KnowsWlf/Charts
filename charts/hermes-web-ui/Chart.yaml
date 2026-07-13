@@ -2,8 +2,8 @@ apiVersion: v2
 name: hermes-web-ui
 description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
 type: application
-version: 0.1.13
-appVersion: "v0.6.28"
+version: 0.1.14
+appVersion: "v0.6.29"
 keywords:
   - hermes
   - ai-agent
