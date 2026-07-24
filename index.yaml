@@ -3,11 +3,11 @@ entries:
   docker-proxy:
   - apiVersion: v2
     appVersion: 3.0.0
-    created: "2026-07-22T08:40:36.537162293Z"
+    created: "2026-07-24T08:38:08.242924284Z"
     description: Helm chart deploying pull-through registry mirror proxies (Docker
       Hub, GCR, GHCR, Quay, registry.k8s.io, MCR, Elastic, NVCR, ...) plus optional
       hosted private registries, behind Traefik
-    digest: df973426533d5af91e23d52fb8acbce9d283a2b7c61d919a4cf6783b69264dd0
+    digest: 4d5ec8e19fefd03b7df724eba6985c19cb57e6c2cac5445cdc184c44cf2de74d
     home: https://github.com/dqzboy/Docker-Proxy
     keywords:
     - registry
@@ -28,8 +28,30 @@ entries:
     version: 0.1.0
   hermes-web-ui:
   - apiVersion: v2
+    appVersion: v0.6.33
+    created: "2026-07-24T08:38:08.250965589Z"
+    description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
+    digest: 8d19ab8804ed469f0e22cf097e58f2fb7b08972960a6f1ea6ba928ba0d2011f5
+    home: https://hermes-agent.nousresearch.com/
+    keywords:
+    - hermes
+    - ai-agent
+    - llm
+    - anthropic
+    - openai
+    maintainers:
+    - name: KnowsWlf
+    name: hermes-web-ui
+    sources:
+    - https://github.com/NousResearch/hermes-agent
+    - https://github.com/EKKOLearnAI/hermes-web-ui
+    type: application
+    urls:
+    - https://KnowsWlf.github.io/Charts/charts/hermes-web-ui-0.1.18.tgz
+    version: 0.1.18
+  - apiVersion: v2
     appVersion: v0.6.32
-    created: "2026-07-22T08:40:36.542929434Z"
+    created: "2026-07-24T08:38:08.25031247Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: 46b26944779e4104d1a1f95b861cb0fc7ef0ac6b0a135b7d574ad6a3b8dd3361
     home: https://hermes-agent.nousresearch.com/
@@ -51,7 +73,7 @@ entries:
     version: 0.1.17
   - apiVersion: v2
     appVersion: v0.6.31
-    created: "2026-07-22T08:40:36.542433533Z"
+    created: "2026-07-24T08:38:08.249687623Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: e062a1acfc2abfa93838b8015412ed368be24e2eab4ee919a1bad5d35549d0a7
     home: https://hermes-agent.nousresearch.com/
@@ -73,7 +95,7 @@ entries:
     version: 0.1.16
   - apiVersion: v2
     appVersion: v0.6.30
-    created: "2026-07-22T08:40:36.541916371Z"
+    created: "2026-07-24T08:38:08.249012392Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: 7ec54e685bd873c249253a1207a84471d7227293da698f06f0eec61205228201
     home: https://hermes-agent.nousresearch.com/
@@ -95,7 +117,7 @@ entries:
     version: 0.1.15
   - apiVersion: v2
     appVersion: v0.6.29
-    created: "2026-07-22T08:40:36.541387871Z"
+    created: "2026-07-24T08:38:08.247668123Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: 5602cbd6615ea3b4435811c4737598137d8516fe81397fe83bc69381e60b80eb
     home: https://hermes-agent.nousresearch.com/
@@ -117,7 +139,7 @@ entries:
     version: 0.1.14
   - apiVersion: v2
     appVersion: v0.6.28
-    created: "2026-07-22T08:40:36.540307632Z"
+    created: "2026-07-24T08:38:08.246832182Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: ab22b2b88ef32ecd19c335063ff4ed4154ddb79330575e8d7d312075dd1c622c
     home: https://hermes-agent.nousresearch.com/
@@ -139,7 +161,7 @@ entries:
     version: 0.1.13
   - apiVersion: v2
     appVersion: v0.6.27
-    created: "2026-07-22T08:40:36.53978434Z"
+    created: "2026-07-24T08:38:08.246192197Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: a656e25cf657edb22247fee01f646ff2e6d84ba4a8c0ff1c76fe0faf2e933a6f
     home: https://hermes-agent.nousresearch.com/
@@ -161,7 +183,7 @@ entries:
     version: 0.1.12
   - apiVersion: v2
     appVersion: v0.6.26
-    created: "2026-07-22T08:40:36.539285125Z"
+    created: "2026-07-24T08:38:08.245566669Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: 19fb734c3ba4368b0cada383e0363030bbe1af67c32145096957af018418f2e4
     home: https://hermes-agent.nousresearch.com/
@@ -183,7 +205,7 @@ entries:
     version: 0.1.11
   - apiVersion: v2
     appVersion: v0.6.26
-    created: "2026-07-22T08:40:36.538742113Z"
+    created: "2026-07-24T08:38:08.244905584Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: a3936de7d682c6e0026be46ed070841e200e9f5aae0f5945b2294b7083d2ad30
     home: https://hermes-agent.nousresearch.com/
@@ -205,7 +227,7 @@ entries:
     version: 0.1.10
   - apiVersion: v2
     appVersion: v0.6.25
-    created: "2026-07-22T08:40:36.546366144Z"
+    created: "2026-07-24T08:38:08.25547395Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: 1d5adea8e710af27b8324ed8da489aa2e216b00503a54f59f60d6d42ce65b06c
     home: https://hermes-agent.nousresearch.com/
@@ -227,7 +249,7 @@ entries:
     version: 0.1.9
   - apiVersion: v2
     appVersion: v0.6.23
-    created: "2026-07-22T08:40:36.545892227Z"
+    created: "2026-07-24T08:38:08.254688743Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: 1109ca91c236a77be147dd3252af331f7dd0ad65a347f081be97ea6db44c3215
     home: https://hermes-agent.nousresearch.com/
@@ -249,7 +271,7 @@ entries:
     version: 0.1.8
   - apiVersion: v2
     appVersion: v0.6.22
-    created: "2026-07-22T08:40:36.54543181Z"
+    created: "2026-07-24T08:38:08.254052735Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: e9322194caa5f0443758ea1755fb6fb6523acdcda88d3273a115914137f8fe6b
     home: https://hermes-agent.nousresearch.com/
@@ -271,7 +293,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: v0.6.21
-    created: "2026-07-22T08:40:36.544948429Z"
+    created: "2026-07-24T08:38:08.253454969Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: cbe54563f5ef032fc5f11a8ea047469fef245d69783628cf964029e448179fb4
     home: https://hermes-agent.nousresearch.com/
@@ -293,7 +315,7 @@ entries:
     version: 0.1.6
   - apiVersion: v2
     appVersion: v0.6.19
-    created: "2026-07-22T08:40:36.544477807Z"
+    created: "2026-07-24T08:38:08.252826725Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: 07a712ed0b9d9d042d593c481f684588ade09c08a96756009078291e6e593ee0
     home: https://hermes-agent.nousresearch.com/
@@ -315,7 +337,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: v0.6.17
-    created: "2026-07-22T08:40:36.543988206Z"
+    created: "2026-07-24T08:38:08.252192551Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: d87b4f3cdc00d58a062a845d9a590d33c65ae64d7660c99b576eac95ada99754
     home: https://hermes-agent.nousresearch.com/
@@ -337,7 +359,7 @@ entries:
     version: 0.1.3
   - apiVersion: v2
     appVersion: v0.6.15
-    created: "2026-07-22T08:40:36.543494439Z"
+    created: "2026-07-24T08:38:08.251594564Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: adac25442956308457ce67ba9d02a742ef5601fc8b92d07f57475e8235ef840e
     home: https://hermes-agent.nousresearch.com/
@@ -359,7 +381,7 @@ entries:
     version: 0.1.2
   - apiVersion: v2
     appVersion: v0.6.14
-    created: "2026-07-22T08:40:36.538260825Z"
+    created: "2026-07-24T08:38:08.244238137Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: a17845d4c7391ac804c0fbde0c8d9a15a7b1ffebcffe7d394da2063c46904893
     home: https://hermes-agent.nousresearch.com/
@@ -381,7 +403,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: v0.6.13
-    created: "2026-07-22T08:40:36.53774848Z"
+    created: "2026-07-24T08:38:08.243610475Z"
     description: Helm chart for Hermes Web UI (bundles the full Hermes Agent) on Kubernetes
     digest: f405ddf739246fe85cbaf0207ff61a004547622d8d247c2ee8e5b03398c193c0
     home: https://hermes-agent.nousresearch.com/
@@ -404,10 +426,10 @@ entries:
   maxkb:
   - apiVersion: v2
     appVersion: v2.0.0
-    created: "2026-07-22T08:40:36.547508247Z"
+    created: "2026-07-24T08:38:08.257203473Z"
     description: Helm chart for MaxKB (Max Knowledge Brain) — an all-in-one enterprise-grade
       agent platform (RAG + workflow + MCP) on Kubernetes
-    digest: 4029f5f9c29ddf035ecf7cfd9bb6465d3683ea7b0c8a0b8bd3e1fe6907215fa3
+    digest: 208eb19cdabaea1b4ad39502bea49381302dffa30380ac8c88f3366fcc0ce0b8
     home: https://maxkb.cn/
     keywords:
     - maxkb
@@ -425,4 +447,4 @@ entries:
     urls:
     - https://KnowsWlf.github.io/Charts/charts/maxkb-0.1.0.tgz
     version: 0.1.0
-generated: "2026-07-22T08:40:36.536528454Z"
+generated: "2026-07-24T08:38:08.242119881Z"
